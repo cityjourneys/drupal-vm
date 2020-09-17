@@ -8,6 +8,21 @@
 
 {% macro alias(host, root) -%}
 {%- if root not in _devtool_docroots %}
+$aliases['self'] = array(
+  'uri' => '{{ vagrant_hostname }}',
+  'root' => '{{ drupal_core_path }}',
+  'remote-host' => '{{ vagrant_hostname }}',
+  'remote-user' => '{{ vagrant_user }}',
+  'remote-db-user' => '{{ drupal_db_user }}',
+  'remote-db-password' => '{{ drupal_db_password }}',
+  'remote-db-name' => '{{ drupal_db_name }}',
+  'remote-db-host' => '{{ drupal_db_host }}',
+  'ssh-options' => 'ssh-options' => '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "' . (getenv('VAGRANT_HOME') ?: drush_server_home() . '/.vagrant.d') . '/insecure_private_key"',
+  'path-aliases' => array(
+    '%drush-script' => '{{ drush_path }}',
+  ),
+);
+
 $aliases['local'] = array(
   'uri' => '{{ vagrant_hostname }}',
   'root' => '{{ drupal_core_path }}',
@@ -32,7 +47,7 @@ $aliases['{{ dev_remote_env }}'] = array(
   'remote-db-password' => '{{ remote_db_password }}',
   'remote-db-name' => '{{ remote_db_name }}',
   'remote-db-host' => '{{ remote_db_host }}',
-  'ssh-options' => '{{ remote_ssh_options }}',
+  'ssh-options' => '-o PasswordAuthentication=no {{ remote_ssh_options }}',
   'path-aliases' => array(
    '%drush-script' => '{{ drush_path }}',
   ),
@@ -46,7 +61,7 @@ $aliases['{{ prod_remote_env }}'] = array(
   'remote-db-password' => '{{ remote_db_password }}',
   'remote-db-name' => '{{ remote_db_name }}',
   'remote-db-host' => '{{ remote_db_host }}',
-  'ssh-options' => '{{ remote_ssh_options }}',
+  'ssh-options' => '-o PasswordAuthentication=no {{ remote_ssh_options }}',
    'path-aliases' => array(
      '%drush-script' => '{{ drush_path }}',
    ),

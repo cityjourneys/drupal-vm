@@ -2,7 +2,7 @@
   <head>
     <title>Drupal VM</title>
     <meta charset="utf-8">
-    <link rel="shortcut icon" href="//cdn.rawgit.com/geerlingguy/drupalvm.github.io/master/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="shortcut icon" href="//www.robertshell.com/sites/default/files/robert-vm-favicon.ico" type="image/vnd.microsoft.icon" />
     <style>
       .section-host {
         font-family: monospace;
@@ -32,27 +32,14 @@
             {{ host.servername }}
           {%- endif -%}
         {%- endfor -%}
-      {%- elif drupalvm_webserver == 'nginx' -%}
-        {%- for host in nginx_vhosts -%}
-          {%- if host.root == path -%}
-            {{ host.server_name }}
-          {%- endif -%}
-        {%- endfor -%}
       {%- endif -%}
     {%- endmacro -%}
-
-    {# Returns the hosts server alias based on the document root #}
-    {%- macro getServernameFromDocroot(path) -%}
+    {# Returns the hosts server env based on the document root #}
+    {%- macro getServerenvFromName(name) -%}
       {%- if drupalvm_webserver == 'apache' -%}
         {%- for host in apache_vhosts -%}
-          {%- if host.documentroot == path -%}
-            {{ host.serveralias }}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- elif drupalvm_webserver == 'nginx' -%}
-        {%- for host in nginx_vhosts -%}
-          {%- if host.root == path -%}
-            {{ host.server_alias }}
+          {%- if host.servername == name -%}
+            {{ host.serverenv }}
           {%- endif -%}
         {%- endfor -%}
       {%- endif -%}
@@ -60,13 +47,15 @@
 
     {%- macro printSite(servername, docroot) -%}
       {%- if docroot not in _devtool_docroots -%}
+       {% macro serverenv() %}{{ getServerenvFromName(servername) }}{% endmacro %}
         <tr>
-          <td><a href="http://{{ serveralias }}">{{ serveralias }}</a></td>
+          <td><a href="http://{{ servername }}">{{ servername }}</a></td>
           <td><code>{{ docroot }}</code></td>
         {% if configure_drush_aliases %}
-          <td><code>drush @{{ vagrant_machine_name }}.{{ servername }}</code></td>
-        {% endif %}
+          <td><code>drush @{{ serverenv() }}</code></td>
+           {%- endif %}
         </tr>
+
       {% endif %}
     {%- endmacro %}
 
@@ -332,7 +321,7 @@
         <div class="col-md-12">
           <section class="jumbotron text-center">
             <a href="https://www.robertshell.com/"><img src="http://www.robertshell.com/sites/default/files/robert-vm-logo.png" alt="Robert Shell" title="Robert Shell" class="img-responsive center-block"></a>
-            <p><a href="https://github.com/geerlingguy/drupal-vm">Drupal VM</a> is a VM for local Drupal development, built with Vagrant + Ansible.</p>
+            <p><a href="https://github.com/robertshell22/drupal-vm">Robert Shell VM</a> is a VM for local Drupal development on robertshell.com, built with Vagrant + Ansible.</p>
             <p><small>Machine name: <strong>{{ vagrant_machine_name }}</strong></small></p>
             <p><a class="btn btn-primary btn-lg" href="http://docs.drupalvm.com/en/latest/" role="button">Read the documentation</a></p>
           </section>

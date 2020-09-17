@@ -1,6 +1,19 @@
 # {{ ansible_managed }}
 {% macro alias(host, root) -%}
 {%- if root not in _devtool_docroots %}
+self:
+   host: '{{ vagrant_hostname }}'
+   options: {   }
+   root: '{{ drupal_core_path }}'
+   uri: '{{ vagrant_hostname }}'
+   user: '{{ vagrant_user }}'
+   remote-db-user: '{{ drupal_db_user }}'
+   remote-db-password: '{{ drupal_db_password }}'
+   remote-db-name: '{{ drupal_db_name }}'
+   remote-db-host: '{{ drupal_db_host }}'
+   ssh:
+      options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
+
 local:
    host: '{{ vagrant_hostname }}'
    options: {   }
@@ -15,7 +28,7 @@ local:
       options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
 
  dev:
-   host: '{{ dev_remote_host }}'
+   host: '{{ dev_remote_uri }}'
    options: {   }
    root: '{{ remote_path }}'
    uri: '{{ dev_remote_uri   }}'
@@ -25,10 +38,10 @@ local:
    remote-db-name: '{{ remote_db_name }}'
    remote-db-host: '{{ remote_db_host }}'
    ssh:
-      options: '{{ remote_ssh_options }}'
+      options: '-o PasswordAuthentication=no  {{ remote_ssh_options }}'
 
  prod:
-   host: '{{ prod_remote_host }}'
+   host: '{{ prod_remote_uri }}'
    options: {   }
    root: '{{ remote_path }}'
    uri: '{{ prod_remote_uri }}'
@@ -38,7 +51,7 @@ local:
    remote-db-name: '{{ remote_db_name }}'
    remote-db-host: '{{ remote_db_host }}'
    ssh:
-      options: '{{ remote_ssh_options }}'
+      options: '-o PasswordAuthentication=no  {{ remote_ssh_options }}'
 
 
 {% endif -%}
