@@ -1,33 +1,64 @@
 # {{ ansible_managed }}
 {% macro alias(host, root) -%}
 {%- if root not in _devtool_docroots %}
-{{ host.split('.')[0] }}:
-  host: '{{ host }}'
-  options: {  }
-  root: '{{ root }}'
-  uri: '{{ host }}'
-  user: '{{ vagrant_user }}'
-  ssh:
-    options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
+local:
+   host: '{{ vagrant_hostname }}'
+   options: {   }
+   root: '{{ drupal_core_path }}'
+   uri: '{{ vagrant_hostname }}'
+   user: '{{ vagrant_user }}'
+   remote-db-user: '{{ drupal_db_user }}'
+   remote-db-password: '{{ drupal_db_password }}'
+   remote-db-name: '{{ drupal_db_name }}'
+   remote-db-host: '{{ drupal_db_host }}'
+   ssh:
+      options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
+
+ dev:
+   host: '{{ dev_remote_host }}'
+   options: {   }
+   root: '{{ remote_path }}'
+   uri: '{{ dev_remote_uri   }}'
+   user: '{{ remote_user }}'
+   remote-db-user: '{{ remote_db_user }}'
+   remote-db-password: '{{ remote_db_password }}'
+   remote-db-name: '{{ remote_db_name }}'
+   remote-db-host: '{{ remote_db_host }}'
+   ssh:
+      options: '{{ remote_ssh_options }}'
+
+ prod:
+   host: '{{ prod_remote_host }}'
+   options: {   }
+   root: '{{ remote_path }}'
+   uri: '{{ prod_remote_uri }}'
+   user: '{{ remote_user }}'
+   remote-db-user: '{{ remote_db_user }}'
+   remote-db-password: '{{ remote_db_password }}'
+   remote-db-name: '{{ remote_db_name }}'
+   remote-db-host: '{{ remote_db_host }}'
+   ssh:
+      options: '{{ remote_ssh_options }}'
+
 
 {% endif -%}
 {% endmacro -%}
 
 {% block aliases -%}
 {%- if drupalvm_webserver == 'apache' -%}
-  {%- for vhost in apache_vhosts -%}
-    {{ alias(vhost.servername, vhost.documentroot) }}
-    {%- if vhost.serveralias is defined -%}
-      {%- for serveralias in vhost.serveralias.split() -%}
-        {{ alias(serveralias, vhost.documentroot) }}
-      {%- endfor -%}
-    {%- endif -%}
-  {%- endfor -%}
+   {%- for vhost in apache_vhosts -%}
+      {{ alias(vhost.servername, vhost.documentroot) }}
+      {%- if vhost.serveralias is defined -%}
+         {%- for serveralias in vhost.serveralias.split() -%}
+            {{ alias(serveralias, vhost.documentroot) }}
+         {%- endfor -%}
+      {%- endif -%}
+   {%- endfor -%}
 {%- elif drupalvm_webserver == 'nginx' -%}
-  {%- for host in nginx_vhosts -%}
-    {%- for server_name in host.server_name.split() -%}
-      {{ alias(server_name, host.root) }}
-    {%- endfor -%}
-  {%- endfor -%}
+   {%- for host in nginx_vhosts -%}
+      {%- for server_name in host.server_name.split() -%}
+         {{ alias(server_name, host.root) }}
+      {%- endfor -%}
+   {%- endfor -%}
 {%- endif -%}
 {%- endblock %}
