@@ -5,4 +5,12 @@ _devtool_docroots:
   - "{{ php_xhprof_html_dir }}"
   - "{{ dashboard_install_dir|default('') }}"
 
+_remote_docroots:
+  - "{{ remote_path }}"
+  - "/var/www/html/{{ vagrant_machine_name }}.com"
+
+_old_docroots:
+  - "{{ drupal_composer_install_dir }}/www"
+  - "/var/www/html/{{ vagrant_machine_name }}.com"
+
 drupalvm_user: "{{ ansible_env.SUDO_USER | default(ansible_env.USER, true) | default(ansible_user_id, true) }}"

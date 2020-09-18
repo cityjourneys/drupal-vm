@@ -1,11 +1,27 @@
 # {{ ansible_managed }}
-{% macro alias(host, root) -%}
+{% macro alias(env, host, root) -%}
 {%- if root not in _devtool_docroots %}
-self:
-   host: '{{ vagrant_hostname }}'
+{%- if root not in _remote_docroots %}
+{%- if root in _old_docroots %}
+old{{ vagrant_machine_name }}.{{ env }}:
+   host: '{{ host }}'
    options: {   }
-   root: '{{ drupal_core_path }}'
-   uri: '{{ vagrant_hostname }}'
+   root: '{{ root }}'
+   uri: '{{ host }}'
+   user: '{{ vagrant_user }}'
+   remote-db-user: '{{ drupal_db_user }}'
+   remote-db-password: '{{ drupal_db_password }}'
+   remote-db-name: '{{ drupal_db_name_old }}'
+   remote-db-host: '{{ drupal_db_host }}'
+   ssh:
+      options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
+{% endif -%}
+{%- if root not in _old_docroots %}
+{{ vagrant_machine_name }}.{{ env }}:
+   host: '{{ host }}'
+   options: {   }
+   root: '{{ root }}'
+   uri: '{{ host }}'
    user: '{{ vagrant_user }}'
    remote-db-user: '{{ drupal_db_user }}'
    remote-db-password: '{{ drupal_db_password }}'
@@ -13,25 +29,29 @@ self:
    remote-db-host: '{{ drupal_db_host }}'
    ssh:
       options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
-
-local:
-   host: '{{ vagrant_hostname }}'
+{% endif -%}
+{% endif -%}
+{%- if root in _remote_docroots %}
+{%- if root in _old_docroots %}
+old{{ vagrant_machine_name }}.{{ env }}:
+   host: '{{ host }}'
    options: {   }
-   root: '{{ drupal_core_path }}'
-   uri: '{{ vagrant_hostname }}'
-   user: '{{ vagrant_user }}'
-   remote-db-user: '{{ drupal_db_user }}'
-   remote-db-password: '{{ drupal_db_password }}'
-   remote-db-name: '{{ drupal_db_name }}'
-   remote-db-host: '{{ drupal_db_host }}'
+   root: '{{ root }}'
+   uri: '{{ host  }}'
+   user: '{{ remote_user }}'
+   remote-db-user: '{{ remote_db_user }}'
+   remote-db-password: '{{ remote_db_password }}'
+   remote-db-name: '{{ remote_db_name_old }}'
+   remote-db-host: '{{ remote_db_host }}'
    ssh:
-      options: '-o "SendEnv PHP_IDE_CONFIG PHP_OPTIONS XDEBUG_CONFIG" -o PasswordAuthentication=no -i "${env.home}/.vagrant.d/insecure_private_key"'
-
- dev:
-   host: '{{ dev_remote_uri }}'
+      options: '-o PasswordAuthentication=no  {{ remote_ssh_options }}'
+{% endif -%}
+{%- if root not in _old_docroots %}
+{{ vagrant_machine_name }}.{{ env }}:
+   host: '{{ host }}'
    options: {   }
-   root: '{{ remote_path }}'
-   uri: '{{ dev_remote_uri   }}'
+   root: '{{ root }}'
+   uri: '{{ host  }}'
    user: '{{ remote_user }}'
    remote-db-user: '{{ remote_db_user }}'
    remote-db-password: '{{ remote_db_password }}'
@@ -39,39 +59,15 @@ local:
    remote-db-host: '{{ remote_db_host }}'
    ssh:
       options: '-o PasswordAuthentication=no  {{ remote_ssh_options }}'
-
- prod:
-   host: '{{ prod_remote_uri }}'
-   options: {   }
-   root: '{{ remote_path }}'
-   uri: '{{ prod_remote_uri }}'
-   user: '{{ remote_user }}'
-   remote-db-user: '{{ remote_db_user }}'
-   remote-db-password: '{{ remote_db_password }}'
-   remote-db-name: '{{ remote_db_name }}'
-   remote-db-host: '{{ remote_db_host }}'
-   ssh:
-      options: '-o PasswordAuthentication=no  {{ remote_ssh_options }}'
-
-
+{% endif -%}
+{% endif -%}
 {% endif -%}
 {% endmacro -%}
 
 {% block aliases -%}
 {%- if drupalvm_webserver == 'apache' -%}
    {%- for vhost in apache_vhosts -%}
-      {{ alias(vhost.servername, vhost.documentroot) }}
-      {%- if vhost.serveralias is defined -%}
-         {%- for serveralias in vhost.serveralias.split() -%}
-            {{ alias(serveralias, vhost.documentroot) }}
-         {%- endfor -%}
-      {%- endif -%}
-   {%- endfor -%}
-{%- elif drupalvm_webserver == 'nginx' -%}
-   {%- for host in nginx_vhosts -%}
-      {%- for server_name in host.server_name.split() -%}
-         {{ alias(server_name, host.root) }}
-      {%- endfor -%}
+      {{ alias(vhost.serverenv, vhost.servername, vhost.documentroot) }}
    {%- endfor -%}
 {%- endif -%}
 {%- endblock %}
